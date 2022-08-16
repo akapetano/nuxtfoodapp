@@ -13,7 +13,9 @@
 
         <div class="quantity">
           <input v-model="count" type="number" min="1" />
-          <button class="primary">Add to Cart - ${{ combinedPrice }}</button>
+          <button class="primary" @click="addToCart">
+            Add to Cart - ${{ combinedPrice }}
+          </button>
         </div>
 
         <fieldset v-if="currentItem.options">
@@ -26,8 +28,28 @@
               name="option"
               :value="option"
             />
+            <label :for="option">{{ option }}</label>
           </div>
         </fieldset>
+
+        <fieldset v-if="currentItem.addOns">
+          <legend><h3>Add Ons</h3></legend>
+          <div v-for="addon in currentItem.addOns" :key="addon">
+            <input
+              :id="addon"
+              v-model="itemAddons"
+              type="checkbox"
+              name="addon"
+              :value="addon"
+            />
+            <label :for="addon">{{ addon }}</label>
+          </div>
+        </fieldset>
+
+        <AppToast v-if="cartSubmitted">
+          Order submitted <br />
+          Check out more <nuxt-link to="/restaurants">restaurants</nuxt-link>!
+        </AppToast>
       </section>
 
       <section class="options">
@@ -40,8 +62,10 @@
 
 <script>
 import { mapState } from 'vuex'
+import AppToast from '@/components/AppToast.vue'
 
 export default {
+  components: { AppToast },
   data() {
     return {
       id: this.$route.params.id,
@@ -49,13 +73,13 @@ export default {
       itemOptions: '',
       itemAddons: [],
       itemSizeAndCost: [],
+      cartSubmitted: false,
     }
   },
   computed: {
     ...mapState(['fooddata']),
     currentItem() {
       let result
-
       for (let i = 0; i < this.fooddata.length; i++) {
         for (let j = 0; j < this.fooddata[i].menu.length; j++) {
           if (this.fooddata[i].menu[j].id === this.id) {
@@ -64,12 +88,24 @@ export default {
           }
         }
       }
-
       return result
     },
     combinedPrice() {
       const total = this.count * this.currentItem.price
       return total.toFixed(2)
+    },
+    methods: {
+      addToCart() {
+        let formOutput = {
+          item: this.currentItem.item,
+          count: this.count,
+          options: this.itemOptions,
+          addOns: this.itemAddons,
+          combinedPrice: this.combinedPrice,
+        }
+
+        this.cartSubmitted = true
+      },
     },
   },
 }
