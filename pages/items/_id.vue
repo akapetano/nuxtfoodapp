@@ -23,7 +23,7 @@
           <div v-for="option in currentItem.options" :key="option">
             <input
               :id="option"
-              v-model="itemOptions"
+              v-model="$v.itemOptions.$model"
               type="radio"
               name="option"
               :value="option"
@@ -37,7 +37,7 @@
           <div v-for="addon in currentItem.addOns" :key="addon">
             <input
               :id="addon"
-              v-model="itemAddons"
+              v-model="$v.itemAddons.$model"
               type="checkbox"
               name="addon"
               :value="addon"
@@ -47,8 +47,13 @@
         </fieldset>
 
         <AppToast v-if="cartSubmitted">
-          Order submitted <br />
+          Order added! <br />
           Check out more <nuxt-link to="/restaurants">restaurants</nuxt-link>!
+        </AppToast>
+
+        <AppToast v-if="errors">
+          Please select options and <br />
+          addons before continuing!
         </AppToast>
       </section>
 
@@ -62,6 +67,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import { required } from 'vuelidate/lib/validators'
 import AppToast from '@/components/AppToast.vue'
 
 export default {
@@ -74,7 +80,12 @@ export default {
       itemAddons: [],
       itemSizeAndCost: [],
       cartSubmitted: false,
+      errors: false,
     }
+  },
+  validations: {
+    itemOptions: { required },
+    itemAddons: { required },
   },
   computed: {
     ...mapState(['fooddata']),
@@ -105,8 +116,18 @@ export default {
         combinedPrice: this.combinedPrice,
       }
 
-      this.cartSubmitted = true
-      this.$store.commit('addToCart', formOutput)
+      const addOnError = this.$v.itemAddons.$invalid
+      const optionError = this.currentItem.options
+        ? this.$v.itemOptions.$invalid
+        : false
+
+      if (addOnError || optionError) {
+        this.erros = true
+      } else {
+        this.errors = false
+        this.cartSubmitted = true
+        this.$store.commit('addToCart', formOutput)
+      }
     },
   },
 }
