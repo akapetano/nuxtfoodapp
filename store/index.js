@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { v4 as uuidv4 } from 'uuid'
 
 export const state = () => ({
@@ -9,6 +10,10 @@ export const getters = {
   totalPrice: (state) => {
     if (!state.cart.length) return 0
     return state.cart.reduce((acc, next) => acc + +next.combinedPrice, 0)
+  },
+  cartCount: (state) => {
+    if (!state.cart.length) return 0
+    return state.cart.reduce((acc, next) => acc + +next.count, 0)
   },
 }
 
