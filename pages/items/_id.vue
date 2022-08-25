@@ -122,7 +122,7 @@ export default {
         : false
 
       if (addOnError || optionError) {
-        this.erros = true
+        this.errors = true
       } else {
         this.errors = false
         this.cartSubmitted = true
